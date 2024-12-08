@@ -66,10 +66,10 @@ def sixty(scalar):
         result[result != 0] *= -1
     return result
 
-# Reads orbital element data from an input .inp file
-def readinp(file):
+# Reads orbital element data from an uploaded .txt file
+def readtxt(file):
     """
-    Reads orbital element data from an uploaded .inp file.
+    Reads orbital element data from an uploaded .txt file.
     
     Args:
         file: Uploaded file object.
@@ -91,6 +91,7 @@ def readinp(file):
             continue
 
         # Split line into key-value pairs
+        # Assuming the file is structured as "key value"
         parts = line.split('=')
 
         if len(parts) == 2:
@@ -163,11 +164,11 @@ def main():
     st.title("Orbital Analysis Tool")
 
     # Input file
-    file_input = st.file_uploader("Upload input file (.inp)", type=["inp"])
+    file_input = st.file_uploader("Upload input file (.txt)", type=["txt"])
 
     if file_input is not None:
         # Read input file and populate variables
-        obj = readinp(file_input)
+        obj = readtxt(file_input)
 
         # Display basic information with checks
         st.write("Object Name:", obj.get('name', 'Unknown'))
