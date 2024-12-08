@@ -66,7 +66,6 @@ def sixty(scalar):
     if scalar < 0:
         result[result != 0] *= -1
     return result
-import io
 
 def readtxt(file):
     """
@@ -139,7 +138,7 @@ def readtxt(file):
         return obj
     else:
         raise ValueError("Orbital elements are missing from the file.")
-        
+
 def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_data_file=None):
     # Read orbital data from the CSV or space-separated file
     if orbital_data_file is not None:
@@ -150,7 +149,7 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
         data = el  # Assuming `el` is the orbital elements data
     
     # Ensure the data is correctly loaded
-    print(data.head())  # Debugging step to confirm correct reading
+    st.write(data.head())  # Displaying the first few rows to ensure correct reading
 
     # Now extract necessary orbital data
     t = np.linspace(0, 1, 100)  # Time array for plotting
@@ -181,6 +180,7 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
 
     plt.tight_layout()
     st.pyplot(fig)
+
 # Fit orbital elements using least squares
 def fitorb(par, yy, err, fita):
     def residuals(par, yy, err, fita):
