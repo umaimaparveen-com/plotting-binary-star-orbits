@@ -201,9 +201,9 @@ def main():
         obj = readtxt(file_input)
 
         # Display basic information with checks
-        st.write("Object Name:", obj.get('name', 'Unknown'))
-        st.write("RA:", obj.get('radeg', 'Unknown'))
-        st.write("Dec:", obj.get('dedeg', 'Unknown'))
+        st.write("Object Name:", obj.get('Object', 'Unknown'))
+        st.write("RA:", obj.get('RA', 'Unknown'))
+        st.write("Dec:", obj.get('DEC', 'Unknown'))
 
         # Assuming orbital elements are available in 'el' (to be fitted if needed)
         el = obj.get('el', [])
