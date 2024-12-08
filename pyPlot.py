@@ -143,7 +143,7 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
     # Read orbital data from the CSV or space-separated file
     if orbital_data_file is not None:
         # If it's a space-separated file, use delim_whitespace=True
-        data = pd.read_csv(orbital_data_file, delim_whitespace=True)
+        data = pd.read_csv(orbital_data_file)
     else:
         # If no file is provided, just pass the data directly
         data = pd.DataFrame(el)    # Assuming `el` is the orbital elements data
