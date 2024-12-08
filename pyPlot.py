@@ -4,6 +4,19 @@ import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
 import io
 
+def read_input(file_path):
+    with open(file_path, 'r') as file:
+        # Parse the data according to the format
+        # Example: extract the orbital elements for each object
+        data = []
+        for line in file:
+            # Check if the line has data (e.g., excluding headers or empty lines)
+            if line.strip():
+                elements = line.split()  # Assuming space-separated values
+                # Extract the necessary orbital elements
+                data.append([float(e) for e in elements[1:11]])  # Adjust according to your data
+        return data
+
 # Orbital mechanics function
 def eph(el, t, rho=False, rv=False):
     """
