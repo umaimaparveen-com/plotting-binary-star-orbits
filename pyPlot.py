@@ -2,6 +2,7 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
+import io
 
 # Orbital mechanics function
 def eph(el, t, rho=False, rv=False):
@@ -66,48 +67,51 @@ def sixty(scalar):
     return result
 
 # Reads orbital element data from an input .inp file
-def readinp(fname):
+import io
+
+# Reads orbital element data from an input .inp file
+def readinp(file):
     """
-    Reads orbital element data from an input .inp file.
+    Reads orbital element data from an uploaded .inp file.
     
     Args:
-        fname: String containing the filename.
+        file: Uploaded file object.
         
     Returns:
         obj: Dictionary containing parsed data.
     """
     obj = {}
     
-    # Open the .inp file and read line by line
-    with open(fname, 'r') as f:
-        lines = f.readlines()
+    # Read the content of the uploaded file as text
+    file_content = io.StringIO(file.getvalue().decode("utf-8"))
+    lines = file_content.readlines()
 
-        for line in lines:
-            line = line.strip()
+    for line in lines:
+        line = line.strip()
 
-            # Skip empty lines and comments (assuming comments start with '#')
-            if line.startswith('#') or not line:
-                continue
+        # Skip empty lines and comments (assuming comments start with '#')
+        if line.startswith('#') or not line:
+            continue
 
-            # Split line into key-value pairs
-            # Assuming the file is structured as "key value"
-            parts = line.split('=')
+        # Split line into key-value pairs
+        # Assuming the file is structured as "key value"
+        parts = line.split('=')
 
-            if len(parts) == 2:
-                key = parts[0].strip()  # Remove extra spaces around key
-                value = parts[1].strip()  # Remove extra spaces around value
+        if len(parts) == 2:
+            key = parts[0].strip()  # Remove extra spaces around key
+            value = parts[1].strip()  # Remove extra spaces around value
 
-                # Check if the value is a number or a string and store accordingly
-                try:
-                    # Try to convert to float or int if possible
-                    value = float(value)
-                    if value.is_integer():
-                        value = int(value)
-                except ValueError:
-                    pass  # Keep value as a string if it cannot be converted
+            # Check if the value is a number or a string and store accordingly
+            try:
+                # Try to convert to float or int if possible
+                value = float(value)
+                if value.is_integer():
+                    value = int(value)
+            except ValueError:
+                pass  # Keep value as a string if it cannot be converted
 
-                # Store key-value pair in the dictionary
-                obj[key] = value
+            # Store key-value pair in the dictionary
+            obj[key] = value
 
     return obj
 
