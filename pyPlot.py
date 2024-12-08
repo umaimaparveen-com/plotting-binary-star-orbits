@@ -5,37 +5,38 @@ from scipy.optimize import leastsq
 import io
 
 # Orbital mechanics function
-def eph(el, t, rho=False, rv=False):
+def eph(el, t, calculate_rho=False, rv=False):
     """
     Calculates ephemeris (theta, rho) or RV for a given set of orbital elements and time.
     """
     n = len(t)
-    res = np.zeros((n, 2))
+    res = np.zeros((n, 2))  # Initialize results array with two columns
     pi2 = 2 * np.pi
-    gr = 180 / np.pi
-    P, TE, e, a, W, w, i, K1, K2, V0 = el
+    gr = 180 / np.pi  # Conversion factor from radians to degrees
+    P, TE, e, a, W, w, i, K1, K2, V0 = el  # Orbital elements
 
-    # Mean anomaly
-    M = (2 * np.pi / P) * (t - TE)
+    # Mean anomaly calculation
+    M = (2 * np.pi / P) * (t - TE)  # Mean anomaly
     M = np.mod(M, 2 * np.pi)  # Ensuring it's within [0, 2pi]
     
     # Solve Kepler's equation for Eccentric anomaly
-    E = M  # Initial guess for E (not iterative for simplicity)
+    E = M  # Initial guess for Eccentric anomaly (E)
     for _ in range(5):  # Simple Newton-Raphson iteration to solve Kepler's equation
         E = M + e * np.sin(E)
 
     # True anomaly (theta) and distance (rho)
     theta = 2 * np.arctan(np.sqrt((1 + e) / (1 - e)) * np.tan(E / 2))
-    rho = a * (1 - e * np.cos(E))
+    rho_value = a * (1 - e * np.cos(E))  # Distance from the primary focus
 
-    # If RV is requested, compute radial velocity
+    # Radial velocity computation if requested
     if rv:
         RV = np.sqrt(a * (1 - e ** 2)) * np.sin(E)  # Simplified RV computation
 
-    if rho:
-        res[:, 0] = theta * gr  # Convert to degrees
-        res[:, 1] = rho
-    elif rv:
+    # If calculate_rho is True, return theta and rho
+    if calculate_rho:
+        res[:, 0] = theta * gr  # Convert theta to degrees
+        res[:, 1] = rho_value  # Store rho in the second column
+    elif rv:  # If rv is True, return the radial velocity
         res[:, 0] = RV
     return res
 
