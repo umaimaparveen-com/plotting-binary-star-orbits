@@ -69,7 +69,6 @@ def sixty(scalar):
 # Reads orbital element data from an input .inp file
 import io
 
-# Reads orbital element data from an input .inp file
 def readinp(file):
     """
     Reads orbital element data from an uploaded .inp file.
@@ -157,8 +156,8 @@ def fitorb(par, yy, err, fita):
 # Save orbital results to file
 def orbsave(obj, el, elerr, fixel):
     with open('orbital_results.txt', 'w') as f:
-        f.write(f"Object: {obj['name']}\n")
-        f.write(f"RA: {obj['radeg']} Dec: {obj['dedeg']}\n")
+        f.write(f"Object: {obj.get('name', 'N/A')}\n")
+        f.write(f"RA: {obj.get('radeg', 'N/A')} Dec: {obj.get('dedeg', 'N/A')}\n")
         f.write("Orbital Elements: " + ' '.join(map(str, el)) + "\n")
         f.write("Errors: " + ' '.join(map(str, elerr)) + "\n")
         f.write("Fixed Elements: " + ' '.join(map(str, fixel)) + "\n")
@@ -173,13 +172,13 @@ def main():
         # Read input file and populate variables
         obj = readinp(file_input)
 
-        # Display basic information
-        st.write("Object Name:", obj['name'])
-        st.write("RA:", obj['radeg'])
-        st.write("Dec:", obj['dedeg'])
+        # Display basic information with checks
+        st.write("Object Name:", obj.get('name', 'Unknown'))
+        st.write("RA:", obj.get('radeg', 'Unknown'))
+        st.write("Dec:", obj.get('dedeg', 'Unknown'))
 
         # Assuming orbital elements are available in 'el' (to be fitted if needed)
-        el = obj['el']
+        el = obj.get('el', [])
         elerr = [0.1] * len(el)  # Placeholder for errors
         fixel = [False] * len(el)  # No fixed elements initially
         
