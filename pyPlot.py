@@ -3,40 +3,40 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
 import io
+import pandas as pd
 
 # Orbital mechanics function
-def eph(el, t, calculate_rho=False, rv=False):
+def eph(el, t, rho=False, rv=False):
     """
     Calculates ephemeris (theta, rho) or RV for a given set of orbital elements and time.
     """
     n = len(t)
-    res = np.zeros((n, 2))  # Initialize results array with two columns
+    res = np.zeros((n, 2))
     pi2 = 2 * np.pi
-    gr = 180 / np.pi  # Conversion factor from radians to degrees
-    P, TE, e, a, W, w, i, K1, K2, V0 = el  # Orbital elements
+    gr = 180 / np.pi
+    P, TE, e, a, W, w, i, K1, K2, V0 = el
 
-    # Mean anomaly calculation
-    M = (2 * np.pi / P) * (t - TE)  # Mean anomaly
+    # Mean anomaly
+    M = (2 * np.pi / P) * (t - TE)
     M = np.mod(M, 2 * np.pi)  # Ensuring it's within [0, 2pi]
     
     # Solve Kepler's equation for Eccentric anomaly
-    E = M  # Initial guess for Eccentric anomaly (E)
+    E = M  # Initial guess for E (not iterative for simplicity)
     for _ in range(5):  # Simple Newton-Raphson iteration to solve Kepler's equation
         E = M + e * np.sin(E)
 
     # True anomaly (theta) and distance (rho)
     theta = 2 * np.arctan(np.sqrt((1 + e) / (1 - e)) * np.tan(E / 2))
-    rho_value = a * (1 - e * np.cos(E))  # Distance from the primary focus
+    rho = a * (1 - e * np.cos(E))
 
-    # Radial velocity computation if requested
+    # If RV is requested, compute radial velocity
     if rv:
         RV = np.sqrt(a * (1 - e ** 2)) * np.sin(E)  # Simplified RV computation
 
-    # If calculate_rho is True, return theta and rho
-    if calculate_rho:
-        res[:, 0] = theta * gr  # Convert theta to degrees
-        res[:, 1] = rho_value  # Store rho in the second column
-    elif rv:  # If rv is True, return the radial velocity
+    if rho:
+        res[:, 0] = theta * gr  # Convert to degrees
+        res[:, 1] = rho
+    elif rv:
         res[:, 0] = RV
     return res
 
@@ -139,13 +139,24 @@ def readtxt(file):
         return obj
     else:
         raise ValueError("Orbital elements are missing from the file.")
-
-# Plot the orbital elements
-def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None):
-    t = np.linspace(0, 1, 100)  # Time array for plotting
+        
+def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_data_file=None):
+    # Read orbital data from the CSV or space-separated file
+    if orbital_data_file is not None:
+        # If it's a space-separated file, use delim_whitespace=True
+        data = pd.read_csv(orbital_data_file, delim_whitespace=True)
+    else:
+        # If no file is provided, just pass the data directly
+        data = el  # Assuming `el` is the orbital elements data
     
-    # Calling eph with the correct parameter name for rho
-    res = eph(el, t, calculate_rho=True)  # Update 'rho' to 'calculate_rho'
+    # Ensure the data is correctly loaded
+    print(data.head())  # Debugging step to confirm correct reading
+
+    # Now extract necessary orbital data
+    t = np.linspace(0, 1, 100)  # Time array for plotting
+
+    # Check the format of `el` (Orbital Elements)
+    res = eph(el, t, rho=True)
     theta = res[:, 0]
     rho = res[:, 1]
 
@@ -170,7 +181,6 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None):
 
     plt.tight_layout()
     st.pyplot(fig)
-
 # Fit orbital elements using least squares
 def fitorb(par, yy, err, fita):
     def residuals(par, yy, err, fita):
