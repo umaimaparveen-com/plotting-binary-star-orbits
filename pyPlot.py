@@ -65,6 +65,8 @@ def sixty(scalar):
     if scalar < 0:
         result[result != 0] *= -1
     return result
+import io
+
 def readtxt(file):
     """
     Reads orbital element data from an uploaded .txt file.
@@ -81,43 +83,61 @@ def readtxt(file):
     file_content = io.StringIO(file.getvalue().decode("utf-8"))
     lines = file_content.readlines()
 
+    orbital_elements = []  # List to store orbital elements
+    found_orbital_elements = False  # Flag to indicate if we've found orbital elements section
+
+    # Iterate through lines to find the orbital elements
     for line in lines:
         line = line.strip()
 
-        # Skip empty lines and comments (assuming comments start with '#')
-        if line.startswith('#') or not line:
+        # Skip empty lines
+        if not line:
             continue
 
-        # Split line into key-value pairs
-        parts = line.split('=')
+        # Skip comment lines starting with "#"
+        if line.startswith('#'):
+            continue
 
-        if len(parts) == 2:
-            key = parts[0].strip()  # Remove extra spaces around key
-            value = parts[1].strip()  # Remove extra spaces around value
+        # Extract orbital elements (skip non-element data)
+        if '=' in line:
+            # Line is key-value pair, so process it
+            parts = line.split('=')
+            if len(parts) == 2:
+                key = parts[0].strip()
+                value = parts[1].strip()
 
-            # Check if the value is a number or a string and store accordingly
-            try:
-                # Try to convert to float or int if possible
-                value = float(value)
-                if value.is_integer():
-                    value = int(value)
-            except ValueError:
-                pass  # Keep value as a string if it cannot be converted
+                # Parse as float or int if possible
+                try:
+                    value = float(value)
+                    if value.is_integer():
+                        value = int(value)
+                except ValueError:
+                    pass  # Keep value as string if it cannot be converted
 
-            # Store key-value pair in the dictionary
-            obj[key] = value
+                obj[key] = value
+                
+                # If we have found the orbital element keys (P, TE, e, etc.), set the flag
+                if key == 'P':  # When we encounter P, the orbital elements section starts
+                    found_orbital_elements = True
 
-    # Check if orbital elements (el) exist in the dictionary and assign them to `el`
-    if 'P' in obj and 'TE' in obj and 'e' in obj and 'a' in obj and 'W' in obj and 'w' in obj and 'i' in obj:
-        el = [
-            obj['P'], obj['TE'], obj['e'], obj['a'], obj['W'], obj['w'], obj['i'],
-            obj.get('K1', 0), obj.get('K2', 0), obj.get('V0', 0)
-        ]
+        # If we found orbital elements, break and store them
+        if found_orbital_elements:
+            orbital_elements = [
+                obj.get('P', 0), obj.get('TE', 0), obj.get('e', 0),
+                obj.get('a', 0), obj.get('W', 0), obj.get('w', 0),
+                obj.get('i', 0), obj.get('K1', 0), obj.get('K2', 0),
+                obj.get('V0', 0)
+            ]
+            break  # Break after storing orbital elements
+
+    # Store the orbital elements in the dictionary
+    obj['el'] = orbital_elements
+
+    # Check if orbital elements were found and return them
+    if orbital_elements:
+        return obj
     else:
-        el = []  # Return empty list if orbital elements are missing
-
-    obj['el'] = el  # Save the orbital elements in the dictionary
-    return obj
+        raise ValueError("Orbital elements are missing from the file.")
 
 # Plot the orbital elements
 def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None):
