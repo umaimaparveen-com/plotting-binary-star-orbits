@@ -139,6 +139,7 @@ def readtxt(file):
         return obj
     else:
         raise ValueError("Orbital elements are missing from the file.")
+    return el
 
 # Plot the orbital elements
 def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None):
