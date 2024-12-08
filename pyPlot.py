@@ -67,24 +67,48 @@ def sixty(scalar):
 
 # Reads orbital element data from an input file
 def readinp(fname):
+    """
+    Reads orbital element data from an input .inp file.
+    
+    Args:
+        fname: String containing the filename.
+        
+    Returns:
+        obj: Dictionary containing parsed data.
+    """
     obj = {}
+    
+    # Open the .inp file and read line by line
     with open(fname, 'r') as f:
         lines = f.readlines()
+
         for line in lines:
             line = line.strip()
-            if line.startswith('#') or line == '':
+
+            # Skip empty lines and comments (assuming comments start with '#')
+            if line.startswith('#') or not line:
                 continue
-            # Example parsing: 
-            if "name" in line:
-                obj['name'] = line.split()[1]
-            elif "RA" in line:
-                obj['radeg'] = getcoord(line.split()[1])
-            elif "Dec" in line:
-                obj['dedeg'] = getcoord(line.split()[1])
-            elif "elements" in line:
-                # Example orbital elements: P, TE, e, a, W, w, i, K1, K2, V0
-                obj['el'] = list(map(float, line.split()[1:]))
-            # Add more specific parsing as needed
+
+            # Split line into key-value pairs
+            # Assuming the file is structured as "key value"
+            parts = line.split('=')
+
+            if len(parts) == 2:
+                key = parts[0].strip()  # Remove extra spaces around key
+                value = parts[1].strip()  # Remove extra spaces around value
+
+                # Check if the value is a number or a string and store accordingly
+                try:
+                    # Try to convert to float or int if possible
+                    value = float(value)
+                    if value.is_integer():
+                        value = int(value)
+                except ValueError:
+                    pass  # Keep value as a string if it cannot be converted
+
+                # Store key-value pair in the dictionary
+                obj[key] = value
+
     return obj
 
 # Plot the orbital elements
