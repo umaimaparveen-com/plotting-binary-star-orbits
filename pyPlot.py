@@ -65,8 +65,6 @@ def sixty(scalar):
     if scalar < 0:
         result[result != 0] *= -1
     return result
-
-# Reads orbital element data from an uploaded .txt file
 def readtxt(file):
     """
     Reads orbital element data from an uploaded .txt file.
@@ -91,7 +89,6 @@ def readtxt(file):
             continue
 
         # Split line into key-value pairs
-        # Assuming the file is structured as "key value"
         parts = line.split('=')
 
         if len(parts) == 2:
@@ -110,6 +107,16 @@ def readtxt(file):
             # Store key-value pair in the dictionary
             obj[key] = value
 
+    # Check if orbital elements (el) exist in the dictionary and assign them to `el`
+    if 'P' in obj and 'TE' in obj and 'e' in obj and 'a' in obj and 'W' in obj and 'w' in obj and 'i' in obj:
+        el = [
+            obj['P'], obj['TE'], obj['e'], obj['a'], obj['W'], obj['w'], obj['i'],
+            obj.get('K1', 0), obj.get('K2', 0), obj.get('V0', 0)
+        ]
+    else:
+        el = []  # Return empty list if orbital elements are missing
+
+    obj['el'] = el  # Save the orbital elements in the dictionary
     return obj
 
 # Plot the orbital elements
