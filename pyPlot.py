@@ -143,7 +143,9 @@ def readtxt(file):
 # Plot the orbital elements
 def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None):
     t = np.linspace(0, 1, 100)  # Time array for plotting
-    res = eph(el, t, rho=True)
+    
+    # Calling eph with the correct parameter name for rho
+    res = eph(el, t, calculate_rho=True)  # Update 'rho' to 'calculate_rho'
     theta = res[:, 0]
     rho = res[:, 1]
 
