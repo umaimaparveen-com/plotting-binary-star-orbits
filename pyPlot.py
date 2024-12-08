@@ -203,7 +203,7 @@ def main():
         # Display basic information with checks
         st.write("Object Name:", obj.get('Object', 'Unknown'))
         st.write("RA:", obj.get('RA', 'Unknown'))
-        st.write("Dec:", obj.get('DEC', 'Unknown'))
+        st.write("Dec:", obj.get('Dec', 'Unknown'))
 
         # Assuming orbital elements are available in 'el' (to be fitted if needed)
         el = obj.get('el', [])
