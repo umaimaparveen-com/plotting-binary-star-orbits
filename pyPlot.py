@@ -34,8 +34,8 @@ def eph(el, t, rho=False, rv=False):
         RV = np.sqrt(a * (1 - e ** 2)) * np.sin(E)  # Simplified RV computation
 
     if np.any(rho):
-    res[:, 0] = theta * gr  # Convert to degrees
-    res[:, 1] = rho
+        res[:, 0] = theta * gr  # Convert to degrees
+        res[:, 1] = rho
         
     elif rv:
         res[:, 0] = RV
