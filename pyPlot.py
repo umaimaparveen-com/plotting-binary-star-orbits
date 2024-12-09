@@ -100,9 +100,8 @@ def readtxt(file):
         if line.startswith('#'):
             continue
 
-        # Extract orbital elements (skip non-element data)
+        # Process key-value pairs for orbital data
         if '=' in line:
-            # Line is key-value pair, so process it
             parts = line.split('=')
             if len(parts) == 2:
                 key = parts[0].strip()
@@ -122,24 +121,28 @@ def readtxt(file):
                 if key == 'P':  # When we encounter P, the orbital elements section starts
                     found_orbital_elements = True
 
-        # If we found orbital elements, break and store them
+        # Check for specific orbital elements after "P"
         if found_orbital_elements:
-            orbital_elements = [
-                obj.get('P', 0), obj.get('TE', 0), obj.get('e', 0),
-                obj.get('a', 0), obj.get('W', 0), obj.get('w', 0),
-                obj.get('i', 0), obj.get('K1', 0), obj.get('K2', 0),
-                obj.get('V0', 0)
-            ]
+            # These should be the actual orbital elements, you can adjust based on the file format
+            try:
+                obj['el'] = [
+                    obj.get('P', 0), obj.get('TE', 0), obj.get('e', 0),
+                    obj.get('a', 0), obj.get('W', 0), obj.get('w', 0),
+                    obj.get('i', 0), obj.get('K1', 0), obj.get('K2', 0),
+                    obj.get('V0', 0)
+                ]
+            except KeyError as e:
+                st.write(f"Missing element in file: {e}")
+
             break  # Break after storing orbital elements
 
-    # Store the orbital elements in the dictionary
-    obj['el'] = orbital_elements
+    # If orbital elements are missing, print warning and set defaults
+    if not obj.get('el'):
+        st.write("Warning: Orbital elements could not be parsed correctly.")
+        obj['el'] = [0] * 10  # Set default orbital elements if missing
 
-    # Check if orbital elements were found and return them
-    if orbital_elements:
-        return obj
-    else:
-        raise ValueError("Orbital elements are missing from the file.")
+    return obj
+
 
 def orbplot(obj, el, elerr, fixel):
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
