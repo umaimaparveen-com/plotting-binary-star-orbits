@@ -161,22 +161,33 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
 
     # Debugging step to check the type and structure of `res`
     st.write(f"Type of res: {type(res)}")
-    st.write(f"Shape of res: {res.shape}")  # Check the dimensions of the array
+    st.write(f"Content of res: {res}")  # Print the content of res to understand its structure
 
-    if isinstance(res, np.ndarray):
-        # Extract theta and rho based on the shape of `res`
+    # Handling tuple indexing issue
+    if isinstance(res, tuple):
+        # Assuming the tuple contains two elements (theta and rho), let's unpack
+        if len(res) >= 2:
+            theta = res[0]  # First element of tuple (assuming it's theta)
+            rho = res[1]    # Second element of tuple (assuming it's rho)
+        else:
+            st.write("Warning: The tuple 'res' doesn't have two elements.")
+            theta = np.zeros_like(t)  # Placeholder for theta
+            rho = np.zeros_like(t)    # Placeholder for rho
+    elif isinstance(res, np.ndarray):
+        # If res is a numpy array, we can use the previous logic
         if res.shape[1] >= 2:
             theta = res[:, 0]
             rho = res[:, 1]
         else:
-            # Handle the case where res does not have two columns
             st.write("Warning: res doesn't have the expected two columns.")
-            theta = res  # Use the available data (might need adjusting based on actual data)
-            rho = np.zeros_like(theta)  # Placeholder for rho (you can adjust this part as needed)
+            theta = res  # Use the available data
+            rho = np.zeros_like(theta)  # Placeholder for rho
     else:
-        # If `res` is not a numpy array, print the content and handle it accordingly
+        # Handle unexpected structure for res
         st.write("Unexpected format for res.")
         st.write(res)
+        theta = np.zeros_like(t)  # Placeholder for theta
+        rho = np.zeros_like(t)    # Placeholder for rho
 
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 
@@ -199,7 +210,6 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
 
     plt.tight_layout()
     st.pyplot(fig)
-
 
 # Fit orbital elements using least squares
 def fitorb(par, yy, err, fita):
