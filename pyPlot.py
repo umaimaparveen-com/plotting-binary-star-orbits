@@ -145,7 +145,7 @@ def orbplot(obj, el, elerr, fixel):
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 
     # Plot the orbital trajectory
-    t = np.linspace(0, 100, 100)  # Example time array
+    t = np.linspace(0, 1000, 1000)  # Extended time array for variations in radial velocity
     result = eph(el, t, rho=True, rv=False)
     theta, rho = result[:, 0], result[:, 1]
     
@@ -168,6 +168,9 @@ def orbplot(obj, el, elerr, fixel):
     ax[1].set_ylabel('RV (km/s)')
     ax[1].grid(True)
     ax[1].legend()
+
+    # Print radial velocity values to verify if they are zero
+    st.write("Radial Velocity Values:", rv[:10])  # Show first 10 radial velocity values for inspection
 
     plt.tight_layout()
     st.pyplot(fig)
@@ -213,20 +216,23 @@ def main():
         obj = readtxt(file_input)
 
         # Display basic information with checks
-        st.write("Object Name:", obj.get('Object', 'Unknown'))
-        st.write("RA:", obj.get('RA', 'Unknown'))
-        st.write("Dec:", obj.get('Dec', 'Unknown'))
+        st.write(f"Object: {obj.get('name', 'N/A')}")
+        st.write(f"RA (deg): {obj.get('radeg', 'N/A')}")
+        st.write(f"Dec (deg): {obj.get('dedeg', 'N/A')}")
+        st.write("Orbital Elements:", obj.get('el', 'N/A'))
 
-        # Assuming orbital elements are available in 'el' (to be fitted if needed)
-        el = obj.get('el', [])
-        elerr = [0.1] * len(el)  # Placeholder for errors
-        fixel = [False] * len(el)  # No fixed elements initially
-        
-        # Plot orbit and RV curves
-        orbplot(obj, el, elerr, fixel)
+        # Request for confirmation
+        if st.button("Plot Orbital Parameters"):
+            el = obj.get('el', [])
+            elerr = [0] * len(el)  # Placeholder for errors
+            fixel = [True] * len(el)  # Placeholder for fixed elements
+            
+            orbplot(obj, el, elerr, fixel)
 
-        # Save results to a file
-        orbsave(obj, el, elerr, fixel)
+            # Option to save results
+            if st.button("Save Results"):
+                orbsave(obj, el, elerr, fixel)
+                st.success("Results saved to 'orbital_results.txt'.")
 
 if __name__ == "__main__":
     main()
