@@ -123,6 +123,16 @@ def main():
         # Read the input file
         obj = readtxt(file_input)
 
+        el_fit, el_err_fit = fitorb(el, yy, err, fita)
+
+        # Calculate ephemeris and radial velocity
+        t = np.linspace(min(time), max(time), 1000)
+        result = eph(el_fit, t, rho=True, rv=True)
+        theta, rho, rv = result[:, 0], result[:, 1], result[:, 2]
+    
+        # Plot orbital trajectory and radial velocity curve
+        orbplot(obj, el_fit, el_err_fit, fixel)
+
         # Display parsed orbital elements
         st.write(f"Object: {obj.get('name', 'N/A')}")
         st.write(f"RA (deg): {obj.get('RA (deg)', 'N/A')}")
