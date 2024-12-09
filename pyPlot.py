@@ -213,13 +213,24 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
 
 # Fit orbital elements using least squares
 def fitorb(par, yy, err, fita):
+    # Residual function for fitting
     def residuals(par, yy, err, fita):
+        # Get the model from the eph function
         model = eph(par, fita, rho=True)
+        
+        # If the model is a tuple, unpack it
+        if isinstance(model, tuple):
+            # Assuming the model contains theta and rho
+            model = model[1]  # Assuming rho is the second element
+        
+        # Return the residuals (observed - model) / error
         return (yy - model) / err
+
+    # Use the residuals function to perform the least squares fitting
+    from scipy.optimize import least_squares
+    result = least_squares(residuals, par, args=(yy, err, fita))
     
-    # Perform fitting using Levenberg-Marquardt (least squares)
-    params_opt, _ = leastsq(residuals, par, args=(yy, err, fita))
-    return params_opt
+    return result
 
 # Save orbital results to file
 def orbsave(obj, el, elerr, fixel):
