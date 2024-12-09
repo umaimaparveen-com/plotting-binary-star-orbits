@@ -158,8 +158,17 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
 
     # Check the format of `el` (Orbital Elements)
     res = eph(el, t, rho=True)
-    theta = res[:, 0]
-    rho = res[:, 1]
+
+    # Debugging step to check the type and structure of `res`
+    st.write(f"Type of res: {type(res)}")
+    st.write(f"Contents of res: {res}")
+    
+    # Check if `res` is a tuple, and unpack accordingly
+    if isinstance(res, tuple):
+        theta, rho = res  # Unpack the tuple
+    else:
+        theta = res[:, 0]
+        rho = res[:, 1]
 
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 
