@@ -157,18 +157,26 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
     t = np.linspace(0, 1, 100)  # Time array for plotting
 
     # Check the format of `el` (Orbital Elements)
-    res = eph(el, t, rho=True)
+    res, _, _ = eph(el, t, rho=True)
 
     # Debugging step to check the type and structure of `res`
     st.write(f"Type of res: {type(res)}")
-    st.write(f"Contents of res: {res}")
-    
-    # Check if `res` is a tuple, and unpack accordingly
-    if isinstance(res, tuple):
-        theta, rho = res  # Unpack the tuple
+    st.write(f"Shape of res: {res.shape}")  # Check the dimensions of the array
+
+    if isinstance(res, np.ndarray):
+        # Extract theta and rho based on the shape of `res`
+        if res.shape[1] >= 2:
+            theta = res[:, 0]
+            rho = res[:, 1]
+        else:
+            # Handle the case where res does not have two columns
+            st.write("Warning: res doesn't have the expected two columns.")
+            theta = res  # Use the available data (might need adjusting based on actual data)
+            rho = np.zeros_like(theta)  # Placeholder for rho (you can adjust this part as needed)
     else:
-        theta = res[:, 0]
-        rho = res[:, 1]
+        # If `res` is not a numpy array, print the content and handle it accordingly
+        st.write("Unexpected format for res.")
+        st.write(res)
 
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 
@@ -191,6 +199,7 @@ def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_
 
     plt.tight_layout()
     st.pyplot(fig)
+
 
 # Fit orbital elements using least squares
 def fitorb(par, yy, err, fita):
