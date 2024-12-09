@@ -40,7 +40,7 @@ def eph(el, t, rho=False, rv=False):
     elif rv:
         res[:, 0] = RV
         
-    return res,rho,rv
+    return res
 
 # Convert a decimal coordinate string to degrees
 def getcoord(s):
@@ -145,12 +145,10 @@ def orbplot(obj, el, elerr, fixel):
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 
     # Plot the orbital trajectory
-    rho, theta = eph(el, np.linspace(0, 2*np.pi, 100), rho=True)
+    t = np.linspace(0, 100, 100)  # Example time array
+    result = eph(el, t, rho=True, rv=False)
+    theta, rho = result[:, 0], result[:, 1]
     
-    # Check if the result is a tuple
-    if isinstance(rho, tuple):
-        rho = rho[1]  # Assuming rho is the second element in the tuple
-        
     ax[0].plot(rho * np.cos(theta), rho * np.sin(theta), label="Orbit")
     ax[0].set_title('Orbital Plot')
     ax[0].set_xlabel('x (AU)')
@@ -159,19 +157,12 @@ def orbplot(obj, el, elerr, fixel):
     ax[0].legend()
 
     # Plot radial velocity
-    t = np.linspace(0, 100, 100)  # Example time array
-    rverr = None  # Adjust if you have radial velocity error
     rv = eph(el, t, rv=True)
     
-    # Check if the result is a tuple for RV
     if isinstance(rv, tuple):
         rv = rv[0]  # Assuming RV is the first element in the tuple
     
-    if rverr is not None:
-        ax[1].errorbar(t, rv, yerr=rverr, fmt='o', label="RV")
-    else:
-        ax[1].plot(t, rv, label="RV")
-    
+    ax[1].plot(t, rv, label="RV")
     ax[1].set_title('Radial Velocity Plot')
     ax[1].set_xlabel('Time (days)')
     ax[1].set_ylabel('RV (km/s)')
