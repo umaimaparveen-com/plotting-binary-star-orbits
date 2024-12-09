@@ -141,72 +141,42 @@ def readtxt(file):
     else:
         raise ValueError("Orbital elements are missing from the file.")
 
-def orbplot(obj, el, elerr, fixel, ps=False, speckle=0.005, rverr=None, orbital_data_file=None):
-    # Read orbital data from the CSV or space-separated file
-    if orbital_data_file is not None:
-        # If it's a space-separated file, use delim_whitespace=True
-        data = pd.read_csv(orbital_data_file)
-    else:
-        # If no file is provided, just pass the data directly
-        data = pd.DataFrame(el)    # Assuming `el` is the orbital elements data
-    
-    # Ensure the data is correctly loaded
-    st.write(data.head())  # Displaying the first few rows to ensure correct reading
-
-    # Now extract necessary orbital data
-    t = np.linspace(0, 1, 100)  # Time array for plotting
-
-    # Check the format of `el` (Orbital Elements)
-    res, _, _ = eph(el, t, rho=True)
-
-    # Debugging step to check the type and structure of `res`
-    st.write(f"Type of res: {type(res)}")
-    st.write(f"Content of res: {res}")  # Print the content of res to understand its structure
-
-    # Handling tuple indexing issue
-    if isinstance(res, tuple):
-        # Assuming the tuple contains two elements (theta and rho), let's unpack
-        if len(res) >= 2:
-            theta = res[0]  # First element of tuple (assuming it's theta)
-            rho = res[1]    # Second element of tuple (assuming it's rho)
-        else:
-            st.write("Warning: The tuple 'res' doesn't have two elements.")
-            theta = np.zeros_like(t)  # Placeholder for theta
-            rho = np.zeros_like(t)    # Placeholder for rho
-    elif isinstance(res, np.ndarray):
-        # If res is a numpy array, we can use the previous logic
-        if res.shape[1] >= 2:
-            theta = res[:, 0]
-            rho = res[:, 1]
-        else:
-            st.write("Warning: res doesn't have the expected two columns.")
-            theta = res  # Use the available data
-            rho = np.zeros_like(theta)  # Placeholder for rho
-    else:
-        # Handle unexpected structure for res
-        st.write("Unexpected format for res.")
-        st.write(res)
-        theta = np.zeros_like(t)  # Placeholder for theta
-        rho = np.zeros_like(t)    # Placeholder for rho
-
+def orbplot(obj, el, elerr, fixel):
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 
     # Plot the orbital trajectory
+    rho, theta = eph(el, np.linspace(0, 2*np.pi, 100), rho=True)
+    
+    # Check if the result is a tuple
+    if isinstance(rho, tuple):
+        rho = rho[1]  # Assuming rho is the second element in the tuple
+        
     ax[0].plot(rho * np.cos(theta), rho * np.sin(theta), label="Orbit")
     ax[0].set_title('Orbital Plot')
     ax[0].set_xlabel('x (AU)')
     ax[0].set_ylabel('y (AU)')
     ax[0].grid(True)
+    ax[0].legend()
 
-    # Plot RV curve
+    # Plot radial velocity
+    t = np.linspace(0, 100, 100)  # Example time array
+    rverr = None  # Adjust if you have radial velocity error
+    rv = eph(el, t, rv=True)
+    
+    # Check if the result is a tuple for RV
+    if isinstance(rv, tuple):
+        rv = rv[0]  # Assuming RV is the first element in the tuple
+    
     if rverr is not None:
-        ax[1].errorbar(t, eph(el, t, rv=True)[:, 0], yerr=rverr, fmt='o', label="RV with error")
+        ax[1].errorbar(t, rv, yerr=rverr, fmt='o', label="RV")
     else:
-        ax[1].plot(t, eph(el, t, rv=True)[:, 0], label="RV")
+        ax[1].plot(t, rv, label="RV")
+    
     ax[1].set_title('Radial Velocity Plot')
     ax[1].set_xlabel('Time (days)')
     ax[1].set_ylabel('RV (km/s)')
     ax[1].grid(True)
+    ax[1].legend()
 
     plt.tight_layout()
     st.pyplot(fig)
