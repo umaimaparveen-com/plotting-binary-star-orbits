@@ -11,7 +11,7 @@ def eph(el, t, rho=False, rv=False):
     Calculates ephemeris (theta, rho) or RV for a given set of orbital elements and time.
     """
     n = len(t)
-    res = np.zeros(len(t), 2))
+    res = np.zeros((len(t), 2))
     pi2 = 2 * np.pi
     gr = 180 / np.pi
     P, TE, e, a, W, w, i, K1, K2, V0 = el
