@@ -96,10 +96,6 @@ def readtxt(file):
         if not line:
             continue
 
-        # Skip comment lines starting with "#"
-        if line.startswith('#'):
-            continue
-
         # Process key-value pairs for orbital data
         if '=' in line:
             parts = line.split('=')
@@ -117,32 +113,72 @@ def readtxt(file):
 
                 obj[key] = value
                 
-                # If we have found the orbital element keys (P, TE, e, etc.), set the flag
-                if key == 'P':  # When we encounter P, the orbital elements section starts
-                    found_orbital_elements = True
+def readtxt(file):
+    """
+    Reads orbital element data for multiple objects from a .txt file.
 
-        # Check for specific orbital elements after "P"
-        if found_orbital_elements:
-            # These should be the actual orbital elements, you can adjust based on the file format
-            try:
-                obj['el'] = [
-                    obj.get('P', 0), obj.get('TE', 0), obj.get('e', 0),
-                    obj.get('a', 0), obj.get('W', 0), obj.get('w', 0),
-                    obj.get('i', 0), obj.get('K1', 0), obj.get('K2', 0),
-                    obj.get('V0', 0)
+    Args:
+        file: Uploaded file object.
+
+    Returns:
+        objects: List of dictionaries, each containing data for one object.
+    """
+    obj = []  # List to store parsed objects
+    current_object = {}  # Temporary dictionary to hold data for the current object
+    file_content = io.StringIO(file.getvalue().decode("utf-8"))
+    lines = file_content.readlines()
+
+    orbital_elements = [
+        'P', 'TE', 'e', 'a', 'W', 'w', 'i', 'K1', 'K2', 'V0'
+    ]  # Expected orbital elements keys
+
+    for line in lines:
+        line = line.strip()
+
+        # Skip empty lines
+        if not line:
+            continue
+
+        # Skip comment lines starting with "#"
+        if line.startswith("#"):
+            continue
+
+        # Start of a new object block
+        if line.startswith("Object:"):
+            # Save the current object if it has data
+            if current_object:
+                # Ensure all orbital elements are present or set defaults
+                current_object['el'] = [
+                    current_object.get(key, 0) for key in orbital_elements
                 ]
-            except KeyError as e:
-                st.write(f"Missing element in file: {e}")
+                obj.append(current_object)
+                current_object = {}  # Reset for the next object
 
-            break  # Break after storing orbital elements
+            # Parse the object name
+            current_object['Object'] = line.split(":", 1)[1].strip()
 
-    # If orbital elements are missing, print warning and set defaults
-    if not obj.get('el'):
-        st.write("Warning: Orbital elements could not be parsed correctly.")
-        obj['el'] = [0] * 10  # Set default orbital elements if missing
+        # Parse key-value pairs
+        elif "=" in line:
+            key, value = map(str.strip, line.split("=", 1))
+            try:
+                # Try to convert value to float or int
+                value = float(value)
+                if value.is_integer():
+                    value = int(value)
+            except ValueError:
+                pass  # Keep as string if conversion fails
 
+            current_object[key] = value
+
+    # Save the last object if it has data
+    if current_object:
+        current_object['el'] = [
+            current_object.get(key, 0) for key in orbital_elements
+        ]
+        obj.append(current_object)
+
+    # Return the parsed list of objects
     return obj
-
 
 def orbplot(obj, el, elerr, fixel):
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
